@@ -14,25 +14,36 @@ service cloud.firestore {
     }
 
     function hasValidScore() {
-      return request.resource.data.bestScore is int
-        && request.resource.data.bestScore >= 0
-        && request.resource.data.bestScore <= 40;
+      return !('bestScore_v2' in request.resource.data)
+        || (
+          request.resource.data.bestScore_v2 is int
+          && request.resource.data.bestScore_v2 >= 0
+          && request.resource.data.bestScore_v2 <= 40
+        );
     }
 
     function hasValidSundayChallengeScore() {
-      return !('sundayChallengeBestScore' in request.resource.data)
+      return !('sundayChallengeBestScore_v2' in request.resource.data)
         || (
-          request.resource.data.sundayChallengeBestScore is int
-          && request.resource.data.sundayChallengeBestScore >= 0
-          && request.resource.data.sundayChallengeBestScore <= 18
+          request.resource.data.sundayChallengeBestScore_v2 is int
+          && request.resource.data.sundayChallengeBestScore_v2 >= 0
+          && request.resource.data.sundayChallengeBestScore_v2 <= 18
+        );
+    }
+
+    function hasNonDecreasingScore() {
+      return !('bestScore_v2' in resource.data)
+        || (
+          'bestScore_v2' in request.resource.data
+          && request.resource.data.bestScore_v2 >= resource.data.bestScore_v2
         );
     }
 
     function hasNonDecreasingSundayChallengeScore() {
-      return !('sundayChallengeBestScore' in resource.data)
+      return !('sundayChallengeBestScore_v2' in resource.data)
         || (
-          'sundayChallengeBestScore' in request.resource.data
-          && request.resource.data.sundayChallengeBestScore >= resource.data.sundayChallengeBestScore
+          'sundayChallengeBestScore_v2' in request.resource.data
+          && request.resource.data.sundayChallengeBestScore_v2 >= resource.data.sundayChallengeBestScore_v2
         );
     }
 
@@ -260,7 +271,7 @@ service cloud.firestore {
         && hasValidPhoneNumber()
         && hasValidScore()
         && hasValidSundayChallengeScore()
-        && request.resource.data.bestScore >= resource.data.bestScore
+        && hasNonDecreasingScore()
         && hasNonDecreasingSundayChallengeScore();
       allow delete: if false;
     }
